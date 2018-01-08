@@ -41,6 +41,7 @@ napi_value StreamWritable::New(napi_env env, napi_callback_info info) {
     StreamWritable* writable = new StreamWritable();
     writable->env_ = env;
 
+    // https://nodejs.org/api/n-api.html#n_api_napi_wrap
     napi_status status = napi_wrap(
       env,
       self,
@@ -58,6 +59,8 @@ napi_value StreamWritable::New(napi_env env, napi_callback_info info) {
 void StreamWritable::Init(napi_env env, napi_value exports) {
   napi_value cons;
 
+  // https://nodejs.org/api/n-api.html#n_api_napi_define_class
+  // https://nodejs.org/api/n-api.html#n_api_napi_property_descriptor
   { // define class
 
     // TODO: add methods/properties
@@ -68,11 +71,13 @@ void StreamWritable::Init(napi_env env, napi_value exports) {
     NAPI_CALL_RETURN_VOID(env, status);
   }
 
+  // https://nodejs.org/api/n-api.html#n_api_napi_create_reference
   { // create reference
     napi_status status = napi_create_reference(env, cons, 1, &constructor);
     NAPI_CALL_RETURN_VOID(env, status);
   }
 
+  // https://nodejs.org/api/n-api.html#n_api_napi_set_named_property
   { // add to exports
     napi_status status = napi_set_named_property(env, exports, "StreamWritable", cons);
     NAPI_CALL_RETURN_VOID(env, status);
