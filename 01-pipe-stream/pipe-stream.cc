@@ -18,25 +18,32 @@ void StreamWritable::Destructor(
 napi_value StreamWritable::New(napi_env env, napi_callback_info info) {
   napi_value self;
 
+  //
+  // Verify constructor invocation
+  //
   {
+    // https://nodejs.org/api/n-api.html#n_api_napi_get_new_target
     napi_value new_target;
     napi_status status = napi_get_new_target(env, info, &new_target);
     NAPI_CALL(env, status);
-    bool is_constructor = (new_target != nullptr);
 
-    // Enforce constructor invocation: `new StreamWritable()`
+    bool is_constructor = (new_target != nullptr);
     assert(is_constructor && "Need to invoke via 'new', i.e. 'new StreamWritable()'");
   }
 
+  //
+  // Obtain JS this instance and assign to self
+  //
   {
-    // Passing no constructor parameters at this point
-    size_t argc = 0;
-    napi_value args = nullptr;
-
-    napi_status status = napi_get_cb_info(env, info, &argc, &args, &self, nullptr);
+    // https://nodejs.org/api/n-api.html#n_api_napi_get_cb_info
+    napi_status status = napi_get_cb_info(env, info, nullptr, nullptr, &self, nullptr);
     NAPI_CALL(env, status);
   }
 
+  //
+  // Create native instance, wrap into JS object and assign to writable->wrapper_
+  // to allow unwrapping later.
+  //
   {
     StreamWritable* writable = new StreamWritable();
     writable->env_ = env;
@@ -70,6 +77,7 @@ napi_value StreamWritable::Write(napi_env env, napi_callback_info info) {
     buffer = args[0];
   }
   {
+    // https://nodejs.org/api/n-api.html#n_api_napi_is_buffer
     bool isBuffer;
     napi_status status = napi_is_buffer(env, buffer, &isBuffer);
     NAPI_CALL(env, status);
@@ -77,10 +85,11 @@ napi_value StreamWritable::Write(napi_env env, napi_callback_info info) {
   }
 
   //
-  // Unwrap StreamWritable from instance
+  // Unwrap StreamWritable from instance (self)
   //
   StreamWritable* writable;
   {
+    // https://nodejs.org/api/n-api.html#n_api_napi_unwrap
     napi_status status = napi_unwrap(env, self, reinterpret_cast<void**>(&writable));
     NAPI_CALL(env, status);
   }
@@ -89,11 +98,10 @@ napi_value StreamWritable::Write(napi_env env, napi_callback_info info) {
   // Extract char* from Buffer
   //
 
-  // https://nodejs.org/api/n-api.html#n_api_napi_is_buffer
-  // https://nodejs.org/api/n-api.html#n_api_napi_get_buffer_info
   char *chunk;
   size_t chunkSize;
   {
+    // https://nodejs.org/api/n-api.html#n_api_napi_get_buffer_info
     napi_status status =
       napi_get_buffer_info(env, buffer, (void**)(&chunk), &chunkSize);
     NAPI_CALL(env, status);
