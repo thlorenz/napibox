@@ -1,0 +1,12 @@
+{
+  "name": "pipe-stream",
+  "description": "pipe stream napi addon example",
+  "main": "pipe-stream.js",
+  "scripts": {
+    "install": "node-gyp rebuild"
+  },
+  "gypfile": true,
+  "dependencies": {
+    "bindings": "~1.3.0"
+  }
+}

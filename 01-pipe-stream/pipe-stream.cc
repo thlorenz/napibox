@@ -56,6 +56,58 @@ napi_value StreamWritable::New(napi_env env, napi_callback_info info) {
   return self;
 }
 
+napi_value StreamWritable::Write(napi_env env, napi_callback_info info) {
+  //
+  // Validate and extract buffer arg and get hold of Object Instance
+  //
+  napi_value self;
+  napi_value buffer;
+  {
+    size_t argc = 1;
+    napi_value args[1];
+    napi_status status = napi_get_cb_info(env, info, &argc, args, &self, nullptr);
+    NAPI_CALL(env, status);
+    buffer = args[0];
+  }
+  {
+    bool isBuffer;
+    napi_status status = napi_is_buffer(env, buffer, &isBuffer);
+    NAPI_CALL(env, status);
+    assert(isBuffer && "Argument needs to be a Buffer");
+  }
+
+  //
+  // Unwrap StreamWritable from instance
+  //
+  StreamWritable* writable;
+  {
+    napi_status status = napi_unwrap(env, self, reinterpret_cast<void**>(&writable));
+    NAPI_CALL(env, status);
+  }
+
+  //
+  // Extract char* from Buffer
+  //
+
+  // https://nodejs.org/api/n-api.html#n_api_napi_is_buffer
+  // https://nodejs.org/api/n-api.html#n_api_napi_get_buffer_info
+  char *chunk;
+  size_t chunkSize;
+  {
+    napi_status status = 
+      napi_get_buffer_info(env, buffer, (void**)(&chunk), &chunkSize);
+    NAPI_CALL(env, status);
+  }
+
+  writable->Write(chunk, chunkSize);
+
+  return nullptr;
+}
+
+void StreamWritable::Write(const char* chunk, const size_t chunkSize) {
+  fprintf(stderr, "writing chunk '%s' of size %ld\n", chunk, chunkSize);
+}
+
 void StreamWritable::Init(napi_env env, napi_value exports) {
   napi_value cons;
 
@@ -63,8 +115,10 @@ void StreamWritable::Init(napi_env env, napi_value exports) {
   // https://nodejs.org/api/n-api.html#n_api_napi_property_descriptor
   { // define class
 
-    // TODO: add methods/properties
-    napi_property_descriptor properties[] = {};
+    napi_property_descriptor properties[] = {
+      DECLARE_NAPI_PROPERTY("write", Write)
+    };
+
     napi_status status = napi_define_class(
         env, "StreamWritable", -1, New, nullptr, 3, properties, &cons);
 
