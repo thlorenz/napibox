@@ -94,7 +94,7 @@ napi_value StreamWritable::Write(napi_env env, napi_callback_info info) {
   char *chunk;
   size_t chunkSize;
   {
-    napi_status status = 
+    napi_status status =
       napi_get_buffer_info(env, buffer, (void**)(&chunk), &chunkSize);
     NAPI_CALL(env, status);
   }
@@ -105,7 +105,7 @@ napi_value StreamWritable::Write(napi_env env, napi_callback_info info) {
 }
 
 void StreamWritable::Write(const char* chunk, const size_t chunkSize) {
-  fprintf(stderr, "writing chunk '%s' of size %ld\n", chunk, chunkSize);
+  fprintf(stderr, "\nCHUNK [\n%s\n]\nSIZE: %ld\n", chunk, chunkSize);
 }
 
 void StreamWritable::Init(napi_env env, napi_value exports) {

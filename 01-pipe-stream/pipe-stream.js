@@ -1,12 +1,11 @@
 'use strict'
 
-const bindings = require('bindings')
-const binding = bindings('pipe_stream')
+const fs = require('fs')
+const Writable = require('./writable')
 
-const { StreamWritable } = binding
+const writable = new Writable()
 
-const writable = new StreamWritable()
-console.log(writable)
-
-const chunk = Buffer.from('hello world')
-writable.write(chunk)
+// Piping small chunks for illustration purposes
+fs
+  .createReadStream(__filename, { highWaterMark: 32 })
+  .pipe(writable)
